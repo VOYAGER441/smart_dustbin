@@ -1,20 +1,14 @@
-#include <Arduino.h>
+#include "./motor/Servo.h";
 
-// put function declarations here:
-int myFunction(int, int);
 
 void setup() {
   // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  servo_ns::Servo myServo; // Create a Servo object
+  myServo.init(); // Initialize the servo motor
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
 }
 
 
