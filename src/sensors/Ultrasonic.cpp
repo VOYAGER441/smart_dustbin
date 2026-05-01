@@ -1,7 +1,7 @@
 #include "Ultrasonic.h"
 
 
-uint16_t ultrasonic_ns::Ultrasonic::get_distance(){
+uint16_t ultrasonic_ns::Ultrasonic::get_distance_in_cm(){
     
     digitalWrite(TRIG_PIN, HIGH);
     delayMicroseconds(10);

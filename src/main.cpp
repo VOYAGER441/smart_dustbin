@@ -1,10 +1,9 @@
-#include "./motor/Servo.h";
+#include "./motor/Servo_m.h"
 
 
 void setup() {
   // put your setup code here, to run once:
-  servo_ns::Servo myServo; // Create a Servo object
-  myServo.init(); // Initialize the servo motor
+ 
 }
 
 void loop() {

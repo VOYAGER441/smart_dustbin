@@ -12,3 +12,12 @@
 
 // servo motor configuration
 #define SERVO_PIN 18
+
+
+// buzzer configuration
+#define BUZZER_PIN 19
+#define BUZZER_FREQUENCY 1000
+#define BUZZER_DURATION 2000
+
+// dustbin full distance threshold in cm
+#define DUSTBIN_FULL_THRESHOLD 25
