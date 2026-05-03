@@ -1,9 +1,12 @@
 #include "ESP32-S3.h"
+#include <HTTPClient.h>
+#include <WiFi.h>
 
 void esp32s3_ns::ESP32_S3::init() {
 
   // init motors
   esp32s3_ns::ESP32_S3::_servo.init(); // Initialize the servo motor
+  _init_wifi();
 }
 
 // ==============================================================
@@ -32,17 +35,39 @@ void esp32s3_ns::ESP32_S3::moisture_cal() {
 }
 
 // check the trash level for dry dustbin, return the distance value in cm
-uint8_t esp32s3_ns::ESP32_S3::check_trash_level_for_dry(){
-  _dry_ultrasonic_value = esp32s3_ns::ESP32_S3::_ultrasonicSensor.get_distance_in_cm(dry_TRIG_PIN, dry_ECHO_PIN);
-  
+uint16_t esp32s3_ns::ESP32_S3::check_trash_level_for_dry() {
+  _dry_ultrasonic_value =
+      esp32s3_ns::ESP32_S3::_ultrasonicSensor.get_distance_in_cm(dry_TRIG_PIN,
+                                                                 dry_ECHO_PIN);
+
   return _dry_ultrasonic_value;
 }
 
 // check the trash level for wet dustbin, return the distance value in cm
-uint8_t esp32s3_ns::ESP32_S3::check_trash_level_for_wet(){
-  _wet_ultrasonic_value = esp32s3_ns::ESP32_S3::_ultrasonicSensor.get_distance_in_cm(wet_TRIG_PIN, wet_ECHO_PIN);
-  
+uint16_t esp32s3_ns::ESP32_S3::check_trash_level_for_wet() {
+  _wet_ultrasonic_value =
+      esp32s3_ns::ESP32_S3::_ultrasonicSensor.get_distance_in_cm(wet_TRIG_PIN,
+                                                                 wet_ECHO_PIN);
+
   return _wet_ultrasonic_value;
+}
+
+void esp32s3_ns::ESP32_S3::check_and_report_trash_levels() {
+  const uint16_t dry_level = check_trash_level_for_dry();
+  const uint16_t wet_level = check_trash_level_for_wet();
+
+  Serial.print("Dry level (cm): ");
+  Serial.println(dry_level);
+  Serial.print("Wet level (cm): ");
+  Serial.println(wet_level);
+
+  if (!_isAnyDustbinFull(dry_level, wet_level)) {
+    Serial.println("Dustbin levels are below full threshold.");
+    return;
+  }
+
+  Serial.println("At least one dustbin is full. Sending levels to backend.");
+  _send_trash_level_to_backend(dry_level, wet_level);
 }
 
 // ==============================================================
@@ -52,14 +77,8 @@ uint8_t esp32s3_ns::ESP32_S3::check_trash_level_for_wet(){
 // check if the dustbin is full by using ultrasonic sensor, if the distance is
 // less than 25cm, then it is full
 bool esp32s3_ns::ESP32_S3::_isDustbinFull() {
-
-  uint8_t temp_ultrasonic_value_for_dry =
-      esp32s3_ns::ESP32_S3::_ultrasonicSensor.get_distance_in_cm(dry_TRIG_PIN,
-                                                                 dry_ECHO_PIN);
-
-  uint8_t temp_ultrasonic_value_for_wet =
-      esp32s3_ns::ESP32_S3::_ultrasonicSensor.get_distance_in_cm(wet_TRIG_PIN,
-                                                                 wet_ECHO_PIN);
+  const uint16_t temp_ultrasonic_value_for_dry = check_trash_level_for_dry();
+  const uint16_t temp_ultrasonic_value_for_wet = check_trash_level_for_wet();
 
   // if the dustbin is full, then send a notification to the user and play the
   // buzzer
@@ -83,6 +102,71 @@ bool esp32s3_ns::ESP32_S3::_isDustbinFull() {
   // Both dustbins are not full
   Serial.println("Both dustbins are not full yet.");
   return false;
+}
+
+bool esp32s3_ns::ESP32_S3::_isAnyDustbinFull(uint16_t dry_level,
+                                             uint16_t wet_level) const {
+  return (dry_level <= DUSTBIN_FULL_THRESHOLD) ||
+         (wet_level <= DUSTBIN_FULL_THRESHOLD);
+}
+
+void esp32s3_ns::ESP32_S3::_init_wifi() {
+  if (WiFi.status() == WL_CONNECTED) {
+    return;
+  }
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to WiFi");
+
+  uint8_t attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+    delay(500);
+    Serial.print(".");
+    attempts++;
+  }
+
+  Serial.println();
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.print("WiFi connected. IP: ");
+    Serial.println(WiFi.localIP());
+  } else {
+    Serial.println("WiFi connection failed.");
+  }
+}
+
+bool esp32s3_ns::ESP32_S3::_send_trash_level_to_backend(uint16_t dry_level,
+                                                         uint16_t wet_level) {
+  if (WiFi.status() != WL_CONNECTED) {
+    _init_wifi();
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Skipping API call because WiFi is not connected.");
+    return false;
+  }
+
+  HTTPClient http;
+  http.setTimeout(API_TIMEOUT_MS);
+  http.begin(BACKEND_API_URL);
+  http.addHeader("Content-Type", "application/json");
+
+  const String payload =
+      "{\"dry_level\":" + String(dry_level) + ",\"wet_level\":" + String(wet_level) + "}";
+
+  const int http_code = http.POST(payload);
+  if (http_code > 0) {
+    Serial.print("Backend response code: ");
+    Serial.println(http_code);
+    Serial.print("Backend response body: ");
+    Serial.println(http.getString());
+  } else {
+    Serial.print("HTTP request failed: ");
+    Serial.println(http.errorToString(http_code));
+  }
+
+  http.end();
+  return http_code >= 200 && http_code < 300;
 }
 
 // open the dustbin right part to let the wet dust fall into the bin

@@ -24,3 +24,10 @@
 
 // dustbin full distance threshold in cm
 #define DUSTBIN_FULL_THRESHOLD 25
+
+// trash monitoring + backend API configuration
+#define TRASH_CHECK_INTERVAL 60000UL
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define BACKEND_API_URL "http://your-backend-url/api/trash-level"
+#define API_TIMEOUT_MS 5000
