@@ -1,6 +1,8 @@
 // ultrasonic sencor configuration
-#define TRIG_PIN 16
-#define ECHO_PIN 17
+#define wet_TRIG_PIN 16
+#define wet_ECHO_PIN 17
+#define dry_TRIG_PIN 4
+#define dry_ECHO_PIN 5
 
 
 // soil moisture sensor configuration
@@ -16,7 +18,8 @@
 
 // buzzer configuration
 #define BUZZER_PIN 19
-#define BUZZER_FREQUENCY 1000
+#define BUZZER_FREQUENCY_FOR_DRY 1000
+#define BUZZER_FREQUENCY_FOR_WET 2000
 #define BUZZER_DURATION 2000
 
 // dustbin full distance threshold in cm

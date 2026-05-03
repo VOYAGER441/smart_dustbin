@@ -9,6 +9,6 @@ private:
   /* data */
 public:
   //returns distance in cm
-   uint16_t get_distance_in_cm();
+   uint16_t get_distance_in_cm(uint8_t trig_pin, uint8_t echo_pin);
 };
 } // namespace ultrasonic_ns

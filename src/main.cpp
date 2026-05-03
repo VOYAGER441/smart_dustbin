@@ -1,15 +1,16 @@
 #include "./motor/Servo_m.h"
+#include "board/ESP32-S3.h"
 
-
+esp32s3_ns::ESP32_S3 esp32s3;
 void setup() {
-  // put your setup code here, to run once:
- 
+  esp32s3.init();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // check the trash level of both dry and wet dustbin every 5 seconds, if the dustbin is full, then send a notification to backend 
+  esp32s3.check_trash_level_for_dry();
+  esp32s3.check_trash_level_for_wet();
+  delay(5000); // Wait for 5 seconds
 }
 
 
-
-// there is a issue in my platfrom.io when i try to create a new project it take too much long time,i wait around 5-6 min but then i clicked the cross button then i open the project it 
