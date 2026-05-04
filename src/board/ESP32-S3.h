@@ -25,13 +25,14 @@ private:
   bool _isAnyDustbinFull(uint16_t dry_level, uint16_t wet_level) const;
   void _init_wifi();
   bool _send_trash_level_to_backend(uint16_t dry_level, uint16_t wet_level);
-
-public:
+  
+  public:
   void init();
   void moisture_cal();
   uint16_t check_trash_level_for_dry();
   uint16_t check_trash_level_for_wet();
   void check_and_report_trash_levels();
+  uint16_t check_ultrasonic_distance(uint8_t trig_pin, uint8_t echo_pin);
 };
 
 } // namespace esp32s3_ns

@@ -70,6 +70,12 @@ void esp32s3_ns::ESP32_S3::check_and_report_trash_levels() {
   _send_trash_level_to_backend(dry_level, wet_level);
 }
 
+uint16_t esp32s3_ns::ESP32_S3::check_ultrasonic_distance(uint8_t trig_pin,
+                                                        uint8_t echo_pin) {
+  return esp32s3_ns::ESP32_S3::_ultrasonicSensor.get_distance_in_cm(trig_pin,
+                                                                 echo_pin);
+}
+
 // ==============================================================
 // private function
 // ==============================================================

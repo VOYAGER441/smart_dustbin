@@ -1,9 +1,10 @@
-// ultrasonic sencor configuration
+// ultrasonic sensor configuration
 #define wet_TRIG_PIN 16
 #define wet_ECHO_PIN 17
 #define dry_TRIG_PIN 4
 #define dry_ECHO_PIN 5
-
+#define soil_TRIG_PIN 12
+#define soil_ECHO_PIN 13
 
 // soil moisture sensor configuration
 #define MOISTURE_PIN 15
@@ -15,7 +16,6 @@
 // servo motor configuration
 #define SERVO_PIN 18
 
-
 // buzzer configuration
 #define BUZZER_PIN 19
 #define BUZZER_FREQUENCY_FOR_DRY 1000
@@ -24,6 +24,7 @@
 
 // dustbin full distance threshold in cm
 #define DUSTBIN_FULL_THRESHOLD 25
+#define MOISTURE_CHECK_DISTANCE_THRESHOLD 10
 
 // trash monitoring + backend API configuration
 #define TRASH_CHECK_INTERVAL 60000UL
