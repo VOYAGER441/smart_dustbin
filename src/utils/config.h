@@ -8,8 +8,9 @@
 
 // soil moisture sensor configuration
 #define MOISTURE_PIN 15
+#define MOISTURE_ADC_RESOLUTION_BITS 12
 #define MOISTURE_FROM_LOW 0
-#define MOISTURE_FROM_HIGH 1023
+#define MOISTURE_FROM_HIGH ((1 << MOISTURE_ADC_RESOLUTION_BITS) - 1)
 #define MOISTURE_TO_LOW 0
 #define MOISTURE_TO_HIGH 100
 
@@ -25,6 +26,7 @@
 // dustbin full distance threshold in cm
 #define DUSTBIN_FULL_THRESHOLD 25
 #define MOISTURE_CHECK_DISTANCE_THRESHOLD 10
+#define ULTRASONIC_TIMEOUT_DISTANCE_CM 400
 
 // trash monitoring + backend API configuration
 #define TRASH_CHECK_INTERVAL 60000UL

@@ -54,6 +54,8 @@ constexpr uint8_t WET_TRIG_PIN = 6;
 constexpr uint8_t WET_ECHO_PIN = 7;
 constexpr uint8_t DRY_TRIG_PIN = 4;
 constexpr uint8_t DRY_ECHO_PIN = 5;
+constexpr uint8_t SOIL_TRIG_PIN = 17;
+constexpr uint8_t SOIL_ECHO_PIN = 18;
 
 // Soil moisture sensor pin and mapping
 constexpr uint8_t MOISTURE_PIN = 16;
@@ -62,6 +64,7 @@ constexpr int MOISTURE_FROM_HIGH = 1023;
 constexpr int MOISTURE_TO_LOW = 0;
 constexpr int MOISTURE_TO_HIGH = 100;
 constexpr uint8_t MOISTURE_DRY_THRESHOLD = 40;
+constexpr uint16_t MOISTURE_CHECK_DISTANCE_THRESHOLD = 10;
 
 // Servo + buzzer pins
 constexpr uint8_t SERVO_PIN = 15;
@@ -262,6 +265,12 @@ void routeTrashByMoisture() {
     return;
   }
 
+  const uint16_t soilDistanceCm =
+      readDistanceCmFiltered(SOIL_TRIG_PIN, SOIL_ECHO_PIN);
+  if (soilDistanceCm >= MOISTURE_CHECK_DISTANCE_THRESHOLD) {
+    return;
+  }
+
   const uint8_t moisturePercent = readMoisturePercent();
   Serial.print("Moisture (%): ");
   Serial.println(moisturePercent);
@@ -280,6 +289,8 @@ void setup() {
   pinMode(DRY_ECHO_PIN, INPUT);
   pinMode(WET_TRIG_PIN, OUTPUT);
   pinMode(WET_ECHO_PIN, INPUT);
+  pinMode(SOIL_TRIG_PIN, OUTPUT);
+  pinMode(SOIL_ECHO_PIN, INPUT);
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(MOISTURE_PIN, INPUT);
 

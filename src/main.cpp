@@ -22,6 +22,5 @@ void loop() {
       MOISTURE_CHECK_DISTANCE_THRESHOLD) {
     esp32s3.moisture_cal();
   }
-  esp32s3.moisture_cal();
   delay(1000);
 }

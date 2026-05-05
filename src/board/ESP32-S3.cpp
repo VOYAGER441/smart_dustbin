@@ -3,6 +3,20 @@
 #include <WiFi.h>
 
 void esp32s3_ns::ESP32_S3::init() {
+  pinMode(wet_TRIG_PIN, OUTPUT);
+  pinMode(wet_ECHO_PIN, INPUT);
+  pinMode(dry_TRIG_PIN, OUTPUT);
+  pinMode(dry_ECHO_PIN, INPUT);
+  pinMode(soil_TRIG_PIN, OUTPUT);
+  pinMode(soil_ECHO_PIN, INPUT);
+  pinMode(MOISTURE_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+
+  digitalWrite(wet_TRIG_PIN, LOW);
+  digitalWrite(dry_TRIG_PIN, LOW);
+  digitalWrite(soil_TRIG_PIN, LOW);
+  digitalWrite(BUZZER_PIN, LOW);
+  analogReadResolution(MOISTURE_ADC_RESOLUTION_BITS);
 
   // init motors
   esp32s3_ns::ESP32_S3::_servo.init(); // Initialize the servo motor
