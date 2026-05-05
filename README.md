@@ -4,7 +4,7 @@ This project is a smart dustbin prototype built with an ESP32-S3 board, an HC-SR
 
 ## Wiring Diagram
 
-![Smart dustbin wiring diagram](circuit/circuit.png)
+![Smart dustbin wiring diagram](circuit/circuit.svg)
 
 ## Project Overview
 
