@@ -18,14 +18,16 @@ The codebase is organized as a PlatformIO Arduino project for the Adafruit Feath
 - Servo motor for the lid
 - Breadboard and jumper wires
 
-## Pin Mapping
+## Pin Mapping (ESP8266 NodeMCU v2)
 
 The current configuration in `src/utils/config.h` uses these pins:
 
-- Ultrasonic trigger: GPIO 16
-- Ultrasonic echo: GPIO 17
-- Soil moisture sensor: GPIO 15
-- Servo signal: GPIO 18
+- Dry bin ultrasonic: TRIG D7 (GPIO13), ECHO D1 (GPIO5)
+- Wet bin ultrasonic: TRIG D5 (GPIO14), ECHO D6 (GPIO12)
+- Object-detect ultrasonic: TRIG D2 (GPIO4), ECHO D8 (GPIO15)
+- Soil moisture sensor: A0
+- Servo signal: D3 (GPIO0)
+- Buzzer: D4 (GPIO2)
 
 ## Build Setup
 

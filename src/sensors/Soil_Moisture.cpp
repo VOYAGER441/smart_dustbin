@@ -9,5 +9,11 @@ uint8_t soil_ns::Soil_Moisture::get_moisture() {
   soil_ns::Soil_Moisture::_moisturePercentage =
       static_cast<uint8_t>(constrain(mapped_moisture, 0L, 100L));
 
+    Serial.print("Raw moisture value: ");
+    Serial.print(soil_ns::Soil_Moisture::_moisture_value);
+    Serial.print(" => Mapped moisture percentage: ");
+    Serial.print(soil_ns::Soil_Moisture::_moisturePercentage);
+    Serial.println("%");
+
   return soil_ns::Soil_Moisture::_moisturePercentage;
 }

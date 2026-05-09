@@ -1,6 +1,13 @@
 #include "ESP32-S3.h"
+#if defined(ARDUINO_ARCH_ESP8266)
+#include <ESP8266HTTPClient.h>
+#include <ESP8266WiFi.h>
+#elif defined(ARDUINO_ARCH_ESP32)
 #include <HTTPClient.h>
 #include <WiFi.h>
+#else
+#error "Unsupported architecture"
+#endif
 
 void esp32s3_ns::ESP32_S3::init() {
   pinMode(wet_TRIG_PIN, OUTPUT);
@@ -16,7 +23,9 @@ void esp32s3_ns::ESP32_S3::init() {
   digitalWrite(dry_TRIG_PIN, LOW);
   digitalWrite(soil_TRIG_PIN, LOW);
   digitalWrite(BUZZER_PIN, LOW);
+#if defined(ARDUINO_ARCH_ESP32)
   analogReadResolution(MOISTURE_ADC_RESOLUTION_BITS);
+#endif
 
   // init motors
   esp32s3_ns::ESP32_S3::_servo.init(); // Initialize the servo motor
@@ -31,19 +40,22 @@ void esp32s3_ns::ESP32_S3::init() {
 void esp32s3_ns::ESP32_S3::moisture_cal() {
 
   // ckeck the dustbin is empty or not by using ultrasonic sensor
-  if (_isDustbinFull()) {
-    return; // If the dustbin is full, exit the function
-  }
+  // if (_isDustbinFull()) {
+  //   return; // If the dustbin is full, exit the function
+  // }
 
   _soil_moisture_value = esp32s3_ns::ESP32_S3::_soilSensor
                              .get_moisture(); // Get moisture percentage
 
   if (_soil_moisture_value < 40) {
+    Serial.println("Soil moisture is low. Opening dry dustbin part.");
     _setDryPart();
   } else if (_soil_moisture_value >= 40) {
+    Serial.println("Soil moisture is high. Opening wet dustbin part.");
     _setWetPart();
 
   } else {
+    Serial.println("Soil moisture is at an intermediate level. No action taken.");
     _setDryPart();
   }
 }
@@ -68,6 +80,7 @@ uint16_t esp32s3_ns::ESP32_S3::check_trash_level_for_wet() {
 
 void esp32s3_ns::ESP32_S3::check_and_report_trash_levels() {
   const uint16_t dry_level = check_trash_level_for_dry();
+  delay(60); // avoid ultrasonic cross-talk between consecutive sensors
   const uint16_t wet_level = check_trash_level_for_wet();
 
   Serial.print("Dry level (cm): ");
@@ -84,6 +97,27 @@ void esp32s3_ns::ESP32_S3::check_and_report_trash_levels() {
   _send_trash_level_to_backend(dry_level, wet_level);
 }
 
+bool esp32s3_ns::ESP32_S3::send_startup_test_payload() {
+  Serial.println("Sending startup API connectivity ping.");
+  if (WiFi.status() != WL_CONNECTED) {
+    _init_wifi();
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Startup API ping skipped: WiFi not connected.");
+    return false;
+  }
+
+  const bool ok = _ping_backend();
+  if (ok) {
+    Serial.println("Startup API ping succeeded.");
+  } else {
+    Serial.println("Startup API ping failed.");
+  }
+
+  return ok;
+}
+
 uint16_t esp32s3_ns::ESP32_S3::check_ultrasonic_distance(uint8_t trig_pin,
                                                         uint8_t echo_pin) {
   return esp32s3_ns::ESP32_S3::_ultrasonicSensor.get_distance_in_cm(trig_pin,
@@ -98,6 +132,7 @@ uint16_t esp32s3_ns::ESP32_S3::check_ultrasonic_distance(uint8_t trig_pin,
 // less than 25cm, then it is full
 bool esp32s3_ns::ESP32_S3::_isDustbinFull() {
   const uint16_t temp_ultrasonic_value_for_dry = check_trash_level_for_dry();
+  delay(60); // avoid ultrasonic cross-talk between consecutive sensors
   const uint16_t temp_ultrasonic_value_for_wet = check_trash_level_for_wet();
 
   // if the dustbin is full, then send a notification to the user and play the
@@ -155,6 +190,31 @@ void esp32s3_ns::ESP32_S3::_init_wifi() {
   }
 }
 
+bool esp32s3_ns::ESP32_S3::_ping_backend() {
+  HTTPClient http;
+  http.setTimeout(API_TIMEOUT_MS);
+#if defined(ARDUINO_ARCH_ESP8266)
+  WiFiClient client;
+  http.begin(client, BACKEND_API_URL);
+#else
+  http.begin(BACKEND_API_URL);
+#endif
+
+  const int http_code = http.GET();
+  if (http_code > 0) {
+    Serial.print("Backend ping response code: ");
+    Serial.println(http_code);
+    Serial.print("Backend ping response body: ");
+    Serial.println(http.getString());
+  } else {
+    Serial.print("Backend ping failed: ");
+    Serial.println(http.errorToString(http_code));
+  }
+
+  http.end();
+  return http_code >= 200 && http_code < 300;
+}
+
 bool esp32s3_ns::ESP32_S3::_send_trash_level_to_backend(uint16_t dry_level,
                                                          uint16_t wet_level) {
   if (WiFi.status() != WL_CONNECTED) {
@@ -168,7 +228,12 @@ bool esp32s3_ns::ESP32_S3::_send_trash_level_to_backend(uint16_t dry_level,
 
   HTTPClient http;
   http.setTimeout(API_TIMEOUT_MS);
+#if defined(ARDUINO_ARCH_ESP8266)
+  WiFiClient client;
+  http.begin(client, BACKEND_API_URL);
+#else
   http.begin(BACKEND_API_URL);
+#endif
   http.addHeader("Content-Type", "application/json");
 
   const String payload =

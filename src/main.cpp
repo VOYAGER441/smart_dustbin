@@ -10,6 +10,7 @@ unsigned long lastTrashCheckTime = 0;
 void setup() {
   Serial.begin(115200);
   esp32s3.init();
+  esp32s3.send_startup_test_payload();
 }
 
 void loop() {
@@ -18,9 +19,9 @@ void loop() {
     lastTrashCheckTime = now;
     esp32s3.check_and_report_trash_levels();
   }
-  if (esp32s3.check_ultrasonic_distance(soil_TRIG_PIN, soil_ECHO_PIN) <
-      MOISTURE_CHECK_DISTANCE_THRESHOLD) {
-    esp32s3.moisture_cal();
-  }
+  // if (esp32s3.check_ultrasonic_distance(soil_TRIG_PIN, soil_ECHO_PIN) <
+  //     MOISTURE_CHECK_DISTANCE_THRESHOLD) {
+  //     }
+      esp32s3.moisture_cal();
   delay(1000);
 }
